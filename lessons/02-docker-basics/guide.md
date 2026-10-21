@@ -83,7 +83,10 @@ Dockerfile  →  docker build  →  image  →  docker run  →  container
 
 ### שלב 0 — לקבל את הקוד
 
-אם עשיתן fork ו-clone בשיעור 1, הריפו כבר במחשב. רק להיכנס לתיקייה ולעדכן:
+אם עשיתן fork ו-clone בשיעור 1, הריפו כבר במחשב. צריך רק לעדכן אותו, בשני צעדים:
+
+1. **ב-GitHub:** בעמוד של העותק שלכן, ללחוץ **Sync fork** ואז **Update branch**. בלי זה, העותק שלכן לא יודע על חומר חדש שעלה לריפו של המורה.
+2. **במחשב:**
 
 ```shell
 cd devops-2027-shoplist
@@ -110,7 +113,7 @@ lessons/
 לפני שבונות image משלנו, מריצות image שמישהו אחר בנה: Nginx מ-Docker Hub.
 
 ```shell
-docker run -d -p 8080:80 --name web nginx:1.25-alpine
+docker run -d -p 8080:80 --name web nginx:1.30-alpine
 ```
 
 לפתוח בדפדפן: `http://localhost:8080`. אמור להופיע דף הפתיחה של Nginx.
@@ -127,7 +130,7 @@ docker images        # ה-image עדיין כאן
 | `-d` | להריץ ברקע |
 | `-p 8080:80` | פורט 8080 במחשב שלך, מחובר לפורט 80 בתוך ה-container |
 | `--name web` | שם ל-container, כדי לא להעתיק ID ארוך |
-| `nginx:1.25-alpine` | שם ה-image והגרסה שלו |
+| `nginx:1.30-alpine` | שם ה-image והגרסה שלו |
 
 ---
 
@@ -166,6 +169,8 @@ app.run(host='0.0.0.0', port=5000)
 
 ליצור את הקובץ `app/backend/Dockerfile` (בלי סיומת):
 
+> **ב-Notepad:** בחלון השמירה לבחור "Save as type: **All files**" ולכתוב את השם `Dockerfile`. אחרת Notepad שומר `Dockerfile.txt`, ו-`docker build` לא ימצא אותו. לבדוק עם `dir app\backend` (PowerShell) או `ls app/backend` (Git Bash). אם VS Code מותקן, עדיף לעבוד בו.
+
 ```dockerfile
 FROM python:3.11-slim
 
@@ -191,7 +196,7 @@ CMD ["python", "app.py"]
 | `EXPOSE 5000` | תיעוד בלבד. **לא פותח את הפורט** |
 | `CMD ["python", "app.py"]` | מה רץ כשה-container עולה |
 
-> **ברשת של הכיתה (נטפרי):** `pip install` בתוך ה-build נכשל עם שגיאת SSL, כי ה-container לא מכיר את תעודת נטפרי. מוסיפים את הבלוק הזה **מיד אחרי שורת ה-`FROM`**:
+> **ברשת של הכיתה (נטפרי):** `pip install` בתוך ה-build נכשל עם שגיאת SSL, כי ה-container לא מכיר את תעודת נטפרי. מוסיפים את הבלוק הזה **מתחת לשורת ה-`FROM`**:
 >
 > ```dockerfile
 > # --- NetFree: רק ברשת של הכיתה ---
@@ -238,7 +243,7 @@ docker history shoplist-backend:local    # השכבות של ה-image
 ליצור את `app/stats/Dockerfile`:
 
 ```dockerfile
-FROM node:20-alpine
+FROM node:24-alpine
 
 WORKDIR /app
 
@@ -252,6 +257,8 @@ CMD ["node", "server.js"]
 
 אין שורת `RUN`: לסרוויס אין ספריות חיצוניות, ולכן אין מה להתקין. ה-build מהיר מאוד, וגם לא צריך את בלוק נטפרי.
 
+**ולמה בכל זאת מעתיקים את `package.json`?** זה כרטיס הזהות של פרויקט Node.js: השם, הגרסה ופקודת ההפעלה. היום אין בו תלויות, אבל ברגע שיתווספו, יהיה צריך להוסיף אחריו `RUN npm install`, בדיוק כמו `requirements.txt` ב-backend. כך ה-Dockerfile כבר מוכן לזה.
+
 ```shell
 docker build -t shoplist-stats:local app/stats
 docker images --filter "reference=shoplist-*"
@@ -259,19 +266,39 @@ docker images --filter "reference=shoplist-*"
 
 | | backend | stats |
 |---|---|---|
-| image בסיס | `python:3.11-slim` | `node:20-alpine` |
+| image בסיס | `python:3.11-slim` | `node:24-alpine` |
 | ספריות | Flask, psycopg2 | אין |
 | פורט | 5000 | 3000 |
 | הפעלה | `python app.py` | `node server.js` |
 
-**על המחשב שלכן לא מותקן Python 3.11 ולא Node 20, ושני ה-images נבנו.** זה בדיוק מה ש-Docker פותר.
+**על המחשב שלכן לא מותקן Python 3.11 ולא Node 24, ושני ה-images נבנו.** זה בדיוק מה ש-Docker פותר.
 
 ---
 
-### שלב 6 — להריץ את stats לבד
+### שלב 6 — להריץ כל סרוויס לבד
+
+**קודם ה-backend:**
+
+```shell
+docker run -d -p 5000:5000 --name backend shoplist-backend:local
+docker logs backend
+curl.exe -i http://localhost:5000/health
+curl.exe -i http://localhost:5000/products
+docker rm -f backend
+```
+
+| כתובת | תשובה | למה |
+|---|---|---|
+| `/health` | `200 OK` | ה-image שבניתן עובד: Python, Flask והקוד, הכל בפנים |
+| `/products` | `500 Internal Server Error` | הקוד מחפש את `DB_HOST` במשתני הסביבה, ואין לו. וגם אין מסד נתונים |
+
+> בלוגים תופיע השורה `WARNING: This is a development server`. זה תקין: Flask מזכיר שהשרת המובנה שלו לא מיועד לייצור. לקורס הוא מתאים.
+
+**ועכשיו stats:**
 
 ```shell
 docker run -d -p 3000:3000 --name stats shoplist-stats:local
+docker logs stats
 curl.exe -i http://localhost:3000/health
 curl.exe -i http://localhost:3000/stats
 docker rm -f stats
@@ -282,7 +309,11 @@ docker rm -f stats
 | `/health` | `200 OK` | הסרוויס עצמו תקין |
 | `/stats` | `502 Bad Gateway` | stats מבקש נתונים מה-backend, וה-backend לא רץ |
 
-כדי ש-`/stats` יעבוד צריך backend, וה-backend צריך מסד נתונים. להריץ כמה containers שמדברים זה עם זה זה בדיוק התפקיד של **Docker Compose**, בשיעור 3.
+> **קודם הלוג, אחר כך הבדיקה.** אם `docker logs` עוד לא מראה `stats service listening on 0.0.0.0:3000`, השרת עוד לא עלה, ו-`curl` יחזיר `Connection reset` או `connection refused`. מחכות שנייה ומריצות שוב את `docker logs`.
+
+> **שימו לב:** אחרי `docker rm`, גם הלוגים נמחקים. `docker logs stats` יחזיר `No such container`. מי שצריכה את הלוג, קוראת אותו לפני שמוחקת.
+
+שני הסרוויסים רצים, ושניהם נכשלים בדיוק באותה נקודה: הם צריכים מישהו אחר. כדי ש-`/stats` יעבוד צריך backend, וכדי ש-`/products` יעבוד צריך מסד נתונים ומשתני סביבה. להריץ כמה containers שמדברים זה עם זה זה בדיוק התפקיד של **Docker Compose**, בשיעור 3.
 
 ---
 
@@ -320,3 +351,6 @@ image הוא תבנית סטטית לקריאה בלבד. container הוא מו�
 
 - [docker-commands.md](docker-commands.md): כל הפקודות של Docker, עם הסברים ודוגמאות
 - [dockerfile-reference.md](dockerfile-reference.md): כל ההוראות של Dockerfile
+- [commands-practice.md](commands-practice.md): תרגול פקודות, על דף ובמחשב
+- [quiz.md](quiz.md): בוחן להגשה על שיעורים 1 ו-2
+- [homework.md](homework.md): שיעורי הבית

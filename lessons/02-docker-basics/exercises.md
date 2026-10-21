@@ -13,7 +13,7 @@
 
 **המשימה:**
 1. להריץ את Nginx ברקע, על פורט 8080 במחשב שלכן:
-   `docker run -d -p 8080:80 --name web nginx:1.25-alpine`
+   `docker run -d -p 8080:80 --name web nginx:1.30-alpine`
 2. לפתוח בדפדפן את `http://localhost:8080`.
 3. להציג את ה-containers שרצים ואת ה-images שבמחשב.
 4. להציג את הלוגים של ה-container. לרענן את הדפדפן, ולהציג שוב.
@@ -27,12 +27,12 @@ image הוא המתכון, container הוא העוגה. מחיקת container ל�
 **התוצאה הצפויה:**
 - דף הפתיחה של Nginx ב-`http://localhost:8080`
 - שורת לוג חדשה בכל רענון של הדפדפן
-- אחרי המחיקה: `web` לא מופיע ב-`docker ps -a`, אבל `nginx:1.25-alpine` מופיע ב-`docker images`
+- אחרי המחיקה: `web` לא מופיע ב-`docker ps -a`, אבל `nginx:1.30-alpine` מופיע ב-`docker images`
 
 **בדיקה:**
 ```shell
 docker ps -a --filter name=web     # ריק
-docker images nginx                # מופיע nginx 1.25-alpine
+docker images nginx                # מופיע nginx 1.30-alpine
 ```
 
 ---

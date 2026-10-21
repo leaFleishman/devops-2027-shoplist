@@ -17,7 +17,7 @@
 | `docker build --no-cache ...` | בונה מאפס, בלי להשתמש ב-cache | `docker build --no-cache -t shoplist-backend:local .` |
 | `docker build --build-arg K=V ...` | מעביר ערך להוראת `ARG` ב-Dockerfile | `docker build --build-arg VERSION=1.2 .` |
 | `docker images` | רשימת ה-images במחשב (זהה ל-`docker image ls`) | `docker images --filter "reference=shoplist-*"` |
-| `docker pull <image>:<tag>` | מוריד image מ-Registry | `docker pull nginx:1.25-alpine` |
+| `docker pull <image>:<tag>` | מוריד image מ-Registry | `docker pull nginx:1.30-alpine` |
 | `docker push <image>:<tag>` | מעלה image ל-Registry (מפגשים 7–8) | `docker push ghcr.io/me/shoplist-backend:a1b2c3d4` |
 | `docker tag <src> <dst>` | נותן ל-image שם נוסף. לא מעתיק כלום | `docker tag shoplist-backend:local shoplist-backend:v1` |
 | `docker history <image>` | מראה את השכבות של ה-image ואת הגודל של כל אחת | `docker history shoplist-backend:local` |
@@ -32,7 +32,7 @@
 
 | דגל | מה הוא עושה | דוגמה |
 |---|---|---|
-| `-d` | מריץ ברקע ומחזיר את הטרמינל | `docker run -d nginx:1.25-alpine` |
+| `-d` | מריץ ברקע ומחזיר את הטרמינל | `docker run -d nginx:1.30-alpine` |
 | `--name <name>` | נותן שם ל-container | `--name web` |
 | `-p <host>:<container>` | מחבר פורט במחשב לפורט ב-container | `-p 8080:80` |
 | `-e KEY=value` | מגדיר משתנה סביבה | `-e BACKEND_URL=http://backend:5000` |

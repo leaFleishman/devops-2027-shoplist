@@ -29,7 +29,7 @@ INSTRUCTION arguments
 ### `FROM`: image הבסיס
 ```dockerfile
 FROM python:3.11-slim
-FROM node:20-alpine AS build      # שם לשלב (multi-stage, בהמשך)
+FROM node:24-alpine AS build      # שם לשלב (multi-stage, בהמשך)
 ```
 - תמיד עם גרסה. אף פעם לא `latest`.
 - `slim` ו-`alpine` הם גרסאות קטנות יותר של אותו image.
@@ -190,14 +190,14 @@ node_modules/
 שלב אחד בונה, ושלב שני לוקח רק את התוצאה. הכלים של שלב הבנייה לא נכנסים ל-image הסופי.
 
 ```dockerfile
-FROM node:20-alpine AS build
+FROM node:24-alpine AS build
 WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 COPY . .
 RUN npm run build
 
-FROM nginx:1.25-alpine
+FROM nginx:1.30-alpine
 COPY --from=build /app/dist /usr/share/nginx/html
 ```
 

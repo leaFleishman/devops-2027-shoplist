@@ -51,4 +51,4 @@ Browser → frontend (Nginx :80) → backend (Flask :5000) → postgres (Postgre
    - לעשות **fork** לריפו של הקורס ב-GitHub, ואז **clone** לעותק שלכן. ההוראות, צעד אחר צעד, ב-[README הראשי](../../README.md#לקבל-את-הקוד-fork-ואז-clone).
    - לבדוק עם `git remote -v` שמופיע שם המשתמש שלכן.
    - להוריד מראש את ה-images של שיעור 2 (לוקח כמה דקות, אפשר בזמן שמסיימות את תרגיל 3):
-     `docker pull nginx:1.25-alpine ; docker pull python:3.11-slim ; docker pull node:20-alpine`
+     `docker pull nginx:1.30-alpine ; docker pull python:3.11-slim ; docker pull node:24-alpine`
