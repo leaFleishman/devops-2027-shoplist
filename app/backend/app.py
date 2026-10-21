@@ -18,7 +18,7 @@ def get_db():
 def health():
     return jsonify({'status': 'ok'})
 
-
+ 
 @app.route('/products', methods=['GET'])
 def get_products():
     conn = get_db()
