@@ -1,0 +1,15 @@
+
+services:
+  greeter-he:
+    build: .
+    ports:
+      - "9001:9000"
+    environment:
+      GREETING: Shalom
+
+  greeter-en:
+    build: .
+    ports:
+      - "9002:9000"
+    environment:
+      GREETING: Hello
