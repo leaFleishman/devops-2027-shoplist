@@ -1,14 +1,18 @@
 
 services:
+  # שירות שמחזיר ברכה בעברית
   greeter-he:
-    build: .
+    build:
+      context: ../../02-docker-basics/homework/greeter
     ports:
       - "9001:9000"
     environment:
       GREETING: Shalom
 
+  # שירות שמחזיר ברכה באנגלית
   greeter-en:
-    build: .
+    build:
+      context: ../../02-docker-basics/homework/greeter
     ports:
       - "9002:9000"
     environment:
