@@ -1,0 +1,73 @@
+services:
+  # מסד הנתונים שומר את המוצרים ומקבל חיבורים מה-backend.
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: shoplist
+      POSTGRES_USER: shopuser
+      POSTGRES_PASSWORD: shoppass
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ../sql/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U shopuser -d shoplist"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ה-backend מנהל את המוצרים, וקורא וכותב במסד הנתונים.
+  backend:
+    build:
+      context: ../app/backend
+    environment:
+      DB_HOST: postgres
+      DB_NAME: shoplist
+      DB_USER: shopuser
+      DB_PASSWORD: shoppass
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; s=socket.create_connection(('127.0.0.1', 5000), timeout=3); s.close()"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # stats מחשב סטטיסטיקות על המוצרים באמצעות ה-backend.
+  stats:
+    build:
+      context: ../app/stats
+    environment:
+      BACKEND_URL: http://backend:5000
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "const net=require('net'); const s=net.connect(3000,'127.0.0.1',()=>{s.end();process.exit(0)}); s.setTimeout(3000,()=>{s.destroy();process.exit(1)}); s.on('error',()=>process.exit(1));"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # ה-frontend מגיש את האתר ומעביר בקשות API ל-backend ול-stats.
+  frontend:
+    build:
+      context: ../app/frontend
+      dockerfile: Dockerfile.multistage
+    ports:
+      - "8080:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+      stats:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+volumes:
+  postgres-data:
