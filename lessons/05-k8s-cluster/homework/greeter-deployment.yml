@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: greeter
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: greeter
+  template:
+    metadata:
+      labels:
+        app: greeter
+    spec:
+      containers:
+        - name: greeter
+          image: greeter:latest
+          imagePullPolicy: Never
+          env:
+            - name: GREETING
+              value: "Hello from Kubernetes!"
+          ports:
+            - containerPort: 8080
